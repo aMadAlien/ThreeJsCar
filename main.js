@@ -1,25 +1,52 @@
-import * as THREE  from 'three'
-// import './style.css'
+import * as THREE from 'three'
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
 
 // Scene
 const scene = new THREE.Scene()
+scene.background = new THREE.Color(0x004d99);
 
-// Create a sphere
-// const geometry = new THREE.SphereGeometry(3, 64, 64)
-const box1 = new THREE.BoxGeometry( 20, 1, 1 ); 
-const box2 = new THREE.BoxGeometry( 20, 1, 1 ); 
-const material = new THREE.MeshStandardMaterial({
-  color: '#F25185'
-})
+// Add a car model
+let object = null
+let objToRender = 'low-poly_truck_car_drifter';
 
+const loader = new GLTFLoader();
+loader.load(
+  `models/${objToRender}/scene.gltf`,
+  function (gltf) {
+    //If the file is loaded, add it to the scene
+    object = gltf.scene;
+
+    object.scale.set(0.03, 0.03, 0.03);
+    object.position.set(-50, 1, 0);
+    scene.add(object);
+  },
+  function (xhr) {
+    //While it is loading, log the progress
+    console.log((xhr.loaded / xhr.total * 100) + '% loaded');
+  },
+  function (error) {
+    console.error('Error occurred while loading:', error);
+  }
+);
+
+// Create a plane geometry
+const planeGeometry = new THREE.PlaneGeometry( 200, 100 );
+const planeMaterial = new THREE.MeshStandardMaterial({ color: 0x003300 })
+const planeMesh = new THREE.Mesh(planeGeometry, planeMaterial)
+planeMesh.rotation.x = -Math.PI / 2;
+scene.add(planeMesh)
+
+// Create boxes
+const box1 = new THREE.BoxGeometry(70, 1, 1);
+const box2 = new THREE.BoxGeometry(70, 1, 1);
+const material = new THREE.MeshStandardMaterial({ color: 0x003366 })
 
 const box1Mesh = new THREE.Mesh(box1, material)
 const box2Mesh = new THREE.Mesh(box2, material)
 
-box1Mesh.position.set(0, 0, 5)
-box2Mesh.position.set(0, 0, -5)
-// console.log(box1Mesh);
+box1Mesh.position.set(0, 0, 12)
+box2Mesh.position.set(0, 0, -12)
 
 scene.add(box1Mesh)
 scene.add(box2Mesh)
@@ -30,19 +57,13 @@ const sizes = {
   height: window.innerHeight
 }
 
-// Light
-const light1 = new THREE.PointLight(0xffffff, 100, 100)
-const light2 = new THREE.PointLight(0xffffff, 100, 100)
-
-light1.position.set(0, 4, 10)
-light2.position.set(0, 4, -10)
-
-scene.add(light1)
-scene.add(light2)
+// Create ambient light
+const ambientLight = new THREE.AmbientLight(0xffffff, 4);
+scene.add(ambientLight);
 
 // Camera
-const camera = new THREE.PerspectiveCamera(45, sizes.width / sizes.height, 0.1, 100)
-camera.position.set(10, 15, 15)
+const camera = new THREE.PerspectiveCamera(55, sizes.width / sizes.height, 0.1, 2000)
+camera.position.set(20, 60, 50)
 scene.add(camera)
 
 // Renderer
