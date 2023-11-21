@@ -3,14 +3,16 @@ html, body {
     padding: 0;
 }
 
-.btn {
+.btns {
     position: absolute;
     top: 20px;
     left: 50px;
     z-index: 5;
+}
+
+.btn {
     padding: 10px 30px;
     border: 0;
-
 
     font-size: 24px;
     color: #c7c6c6;

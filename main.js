@@ -1,7 +1,7 @@
 import * as THREE from 'three'
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
-import { moveObjForward } from './utils/animation'
+import { moveObjForward, rotateWheels } from './utils/animation'
 
 // Scene
 const scene = new THREE.Scene()
@@ -107,15 +107,22 @@ window.addEventListener('resize', () => {
 
 // make the car move forward
 const driveBtn = document.querySelector('.btn-drive')
+const wheelsBtn = document.querySelector('.btn-wheels')
+let wheelsRotate = false
 
 driveBtn.addEventListener('click', () => {
   const targetX = 50;
   moveObjForward(object, targetX);
 })
 
+wheelsBtn.addEventListener('click', () => {
+  wheelsRotate = !wheelsRotate
+})
+
 export function animateObj(deltaSeconds = 0.5) {
   requestAnimationFrame(animateObj);
   mixer.update(deltaSeconds);
+  wheelsRotate && rotateWheels(object, 0.0002)
 }
 
 const loop = () => {
