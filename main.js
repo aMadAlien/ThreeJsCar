@@ -10,6 +10,8 @@ scene.background = new THREE.Color(0x004d99);
 // Add a car model
 let object = null
 let objToRender = 'low-poly_truck_car_drifter';
+let mixer = null
+let animationType = 'Car engine'
 
 const loader = new GLTFLoader();
 loader.load(
@@ -17,6 +19,15 @@ loader.load(
   function (gltf) {
     //If the file is loaded, add it to the scene
     object = gltf.scene;
+
+    //  Animation Mixer
+    mixer = new THREE.AnimationMixer( object );
+    const clips = gltf.animations;
+
+    // Play a specific animation
+    const clip = THREE.AnimationClip.findByName( clips, animationType );
+    const action = mixer.clipAction( clip );
+    action.play();
 
     object.scale.set(0.03, 0.03, 0.03);
     object.position.set(-50, 1, 0);
@@ -102,10 +113,16 @@ driveBtn.addEventListener('click', () => {
   moveObjForward(object, targetX);
 })
 
+export function animateObj(deltaSeconds = 0.5) {
+  requestAnimationFrame(animateObj);
+  mixer.update(deltaSeconds);
+}
+
 const loop = () => {
   controls.update()
   renderer.render(scene, camera)
   window.requestAnimationFrame(loop)
+  mixer && animateObj()
 }
 
 loop()
