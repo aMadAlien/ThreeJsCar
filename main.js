@@ -29,6 +29,11 @@ loader.load(
     const action = mixer.clipAction( clip );
     action.play();
 
+    // Change car body color to white
+    const carBody = object.getObjectByName('Frame_Orange_0')
+    carBody.material.color.setHex("0xffffff")
+
+    // Change model size and position
     object.scale.set(0.03, 0.03, 0.03);
     object.position.set(-50, 1, 0);
     scene.add(object);
@@ -90,7 +95,7 @@ const controls = new OrbitControls(camera, canvas) // makes it move
 controls.enableDamping = true
 controls.enablePan = false
 // controls.enableZoom = false
-controls.autoRotate = true
+// controls.autoRotate = true
 controls.autoRotateSpeed = 2
 
 // Resize
