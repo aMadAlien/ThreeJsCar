@@ -1,6 +1,7 @@
 import * as THREE from 'three'
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
+import { moveObjForward } from './utils/animation'
 
 // Scene
 const scene = new THREE.Scene()
@@ -91,6 +92,14 @@ window.addEventListener('resize', () => {
   camera.aspect = sizes.width / sizes.height
   camera.updateProjectionMatrix() // + loop() to avoid sphere squeezing
   renderer.setSize(sizes.width, sizes.height)
+})
+
+// make the car move forward
+const driveBtn = document.querySelector('.btn-drive')
+
+driveBtn.addEventListener('click', () => {
+  const targetX = 50;
+  moveObjForward(object, targetX);
 })
 
 const loop = () => {
