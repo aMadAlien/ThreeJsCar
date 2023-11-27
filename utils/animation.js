@@ -18,9 +18,9 @@ export function moveObjForward(object, targetX) {
 }
 
 export function rotateWheels(object, speed = 0.05) {
-    const wheelsDetails = [
-        'Front_wheel_Black_0', 'Front_wheel_Light_black_0', 'Rear_wheel_Black_0', 'Rear_wheel_Light_black_0'
-    ]
+    const wheelsFront = [ 'Front_wheel', 'Rear_wheel', 'Front_wheel', 'Rear_wheel' ]
+    const wheelsRear = [ 'Front_wheel001', 'Rear_wheel001', 'Front_wheel001', 'Rear_wheel001' ]
 
-    wheelsDetails.forEach(detail => object.getObjectByName(detail).rotation.z -= speed)
+    wheelsFront.forEach(detail => object.getObjectByName(detail).rotation.z -= speed)
+    wheelsRear.forEach(detail => object.getObjectByName(detail).rotation.z += speed)
 }
