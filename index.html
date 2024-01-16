@@ -1,18 +1,190 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="stylesheet" href="styles.css">
-    <title>Vite App</title>
-  </head>
-  <body>
-    <div class="btns">
-      <button class="btn btn-drive">Drive</button>
-      <button class="btn btn-wheels">Rotate wheels</button>
-    </div>
-    <canvas class="webgl"></canvas>
-    <script type="module" src="/main.js"></script>
-  </body>
+
+<head>
+  <title>three.js ar</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+
+  <script type="importmap">
+			{
+				"imports": {
+					"three": "../build/three.module.js",
+					"three/addons/": "./jsm/"
+				}
+			}
+		</script>
+
+
+  <script type="module">
+
+    import * as THREE from 'three';
+    import { ARButton } from 'three/addons/webxr/ARButton.js';
+    import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+
+    let camera, scene, renderer;
+    let controller, mixer;
+    let object = null
+
+    let wheelsRotate = false
+
+    init();
+    animate();
+
+    function init() {
+      const container = document.createElement('div');
+      document.body.appendChild(container);
+
+      scene = new THREE.Scene();
+
+      camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.01, 20);
+
+      const light = new THREE.HemisphereLight(0xffffff, 0xbbbbff, 3);
+      light.position.set(0.5, 1, 0.25);
+      scene.add(light);
+
+      //
+
+      renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+      renderer.setPixelRatio(window.devicePixelRatio);
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      renderer.xr.enabled = true;
+      container.appendChild(renderer.domElement);
+
+      //
+
+      document.body.appendChild(ARButton.createButton(renderer));
+
+      //
+
+      // Add a car model
+      let objToRender = 'low-poly_truck_car_drifter';
+      let animationType = 'Car engine'
+
+      const loader = new GLTFLoader();
+      loader.load(
+        `models/${objToRender}/scene.gltf`,
+        function (gltf) {
+          //If the file is loaded, add it to the scene
+          object = gltf.scene;
+
+          //  Animation Mixer
+          mixer = new THREE.AnimationMixer(object);
+          const clips = gltf.animations;
+
+          // Play a specific animation
+          const clip = THREE.AnimationClip.findByName(clips, animationType);
+          const action = mixer.clipAction(clip);
+          action.play();
+
+          // Change car body color to white
+          const carBody = object.getObjectByName('Frame_Orange_0')
+          carBody.material.color.setHex("0xffffff")
+
+          // Change model size and position
+          object.scale.set(
+            0.003,
+            0.003,
+            0.003
+          );
+          object.position.set(0, -1, -4);
+          object.rotation.y = Math.PI
+          console.log(object.rotation);
+          scene.add(object);
+        },
+        function (xhr) {
+          //While it is loading, log the progress
+          console.log((xhr.loaded / xhr.total * 100) + '% loaded');
+        },
+        function (error) {
+          console.error('Error occurred while loading:', error);
+        }
+      );
+
+      // 
+
+      window.addEventListener('resize', onWindowResize);
+    }
+
+    function onWindowResize() {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    }
+
+    function moveObjForward(object, speed = 0.0005) {
+      object.position.x += speed
+      rotateWheels(object)
+
+      if (object.position.x > 4) {
+        wheelsRotate = false
+        setTimeout(() => (object.position.x = -2), 1000);
+      }
+    }
+
+    function moveObjCircular(object, radius = 3, speed = 0.0001) {
+      const centerX = 0;
+      const centerZ = -7;
+
+      object.totalAngle = object.totalAngle || 0;
+      object.totalAngle += speed;
+
+      const newX = centerX + radius * Math.cos(object.totalAngle);
+      const newZ = centerZ + radius * Math.sin(object.totalAngle);
+
+      object.position.x = newX;
+      object.position.z = newZ;
+
+      // rotate wheels
+      rotateWheels(object)
+
+      // rotate car model accordinf to position
+      const rotationAngle = - object.totalAngle - Math.PI / 2;
+      object.rotation.y = rotationAngle;
+    }
+
+
+    function rotateWheels(object, speed = 0.002) {
+      const wheelsFront = ['Front_wheel', 'Rear_wheel', 'Front_wheel', 'Rear_wheel']
+      const wheelsRear = ['Front_wheel001', 'Rear_wheel001', 'Front_wheel001', 'Rear_wheel001']
+
+      wheelsFront.forEach(detail => object.getObjectByName(detail).rotation.z -= speed)
+      wheelsRear.forEach(detail => object.getObjectByName(detail).rotation.z += speed)
+    }
+
+    //
+
+    controller = renderer.xr.getController(0);
+    controller.addEventListener('select', () => {
+      wheelsRotate = !wheelsRotate
+    });
+
+    //
+
+
+    function animate() {
+      renderer.setAnimationLoop(render);
+    }
+
+    function animateObj(deltaSeconds = 0.5) {
+      mixer.update(deltaSeconds);
+      // wheelsRotate && moveObjForward(object)
+      wheelsRotate && moveObjCircular(object, 3, 0.05)
+    }
+
+    const clock = new THREE.Clock();
+
+    function render() {
+      renderer.render(scene, camera);
+      const deltaSeconds = clock.getDelta();
+      mixer && animateObj(deltaSeconds)
+    }
+
+  </script>
+</body>
+
 </html>
